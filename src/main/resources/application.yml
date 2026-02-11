@@ -4,9 +4,9 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: postgres
-    password: 147258
+    url: jdbc:postgresql://localhost:5432/smart_campus
+    username: smartcampus_app
+    password: SmartCampus2024
 
   ai:
     openai:
@@ -16,6 +16,9 @@ spring:
         options:
           model: qwen-max
           temperature: 0.6
+
+server:
+  port: 8083
 
 #配置mybatis
 mybatis:

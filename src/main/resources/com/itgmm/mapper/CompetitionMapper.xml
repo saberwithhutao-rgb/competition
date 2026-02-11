@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itgmm.mapper.CompetitionMapper">
+
+    <select id="search" resultType="com.itgmm.pojo.Competition">
+        select * from competition
+        <where>
+            <if test="name != null">
+                name = #{name}
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+             <if test="level != null">
+                AND level = #{level}
+            </if>
+        </where>
+        order by competition_time desc
+    </select>
+    <select id="getById" resultType="com.itgmm.pojo.CompetitionRule">
+        select competition_rules.*
+        from competition
+                 left join competition_rules
+                           on competition.id = competition_rules.competition_id
+        where competition.id = #{id}
+    </select>
+
+</mapper>

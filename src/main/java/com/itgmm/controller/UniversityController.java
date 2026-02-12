@@ -111,19 +111,37 @@ public class UniversityController {
             @RequestParam Integer universityId,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
-        // 未登录用户默认返回false
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        System.out.println("=================================");
+        System.out.println("【/check】接口被调用");
+        System.out.println("收到参数 - universityId: " + universityId);
+        System.out.println("收到参数 - authHeader: " + (authHeader != null ? "存在" : "不存在"));
+
+        if (authHeader == null) {
+            System.out.println("❌ authHeader为空");
             return Result.success(false);
         }
 
-        // 从token获取用户ID
+        if (!authHeader.startsWith("Bearer ")) {
+            System.out.println("❌ authHeader格式错误: " + authHeader);
+            return Result.success(false);
+        }
+
         String token = authHeader.substring(7);
+        System.out.println("提取token: " + token.substring(0, Math.min(20, token.length())) + "...");
+
         try {
             Long userId = jwtUtil.getUserIdFromToken(token);
+            System.out.println("✅ token解析成功 - userId: " + userId);
+
+            System.out.println("调用service.isFavorited - userId: " + userId + ", universityId: " + universityId);
             boolean favorited = universityService.isFavorited(userId.intValue(), universityId);
+            System.out.println("✅ isFavorited返回: " + favorited);
+
             return Result.success(favorited);
         } catch (Exception e) {
-            return Result.success(false);
+            System.out.println("❌ 执行失败: " + e.getMessage());
+            e.printStackTrace();
+            return Result.error("操作失败: " + e.getMessage());
         }
     }
 

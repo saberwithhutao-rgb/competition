@@ -35,7 +35,7 @@ public class UniversityController {
      */
     @PostMapping("/toggle")
     public Result toggleFavorite(
-            @RequestBody Map<String, Object> request,  // 改为Object类型
+            @RequestBody Map<String, Object> request,
             @RequestHeader("Authorization") String authHeader) {
 
         System.out.println("=== 收到收藏请求 ===");
@@ -58,30 +58,25 @@ public class UniversityController {
             return Result.error("登录已过期，请重新登录");
         }
 
-        // 3. 获取院校ID（兼容多种类型）
+        // 3. 获取院校ID - 简化版本
         Integer universityId = null;
         Object idObj = request.get("universityId");
+
         if (idObj == null) {
             System.out.println("❌ 院校ID为空");
             return Result.error("院校ID不能为空");
         }
 
-        // 处理Integer或Double类型
-        if (idObj instanceof Integer) {
-            universityId = (Integer) idObj;
-        } else if (idObj instanceof Double) {
-            universityId = ((Double) idObj).intValue();
-        } else if (idObj instanceof String) {
+        // 🔴 关键修复：直接转换为Number，再取intValue
+        if (idObj instanceof Number) {
+            universityId = ((Number) idObj).intValue();
+        } else {
             try {
-                universityId = Integer.parseInt((String) idObj);
+                universityId = Integer.parseInt(idObj.toString());
             } catch (NumberFormatException e) {
                 System.out.println("❌ 院校ID格式错误: " + idObj);
                 return Result.error("院校ID格式错误");
             }
-        }
-
-        if (universityId == null) {
-            return Result.error("院校ID不能为空");
         }
 
         System.out.println("✅ 院校ID: " + universityId);

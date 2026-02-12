@@ -32,5 +32,5 @@ logging:
     org.springframework.ai.chat.client.advisor: debug
 
 jwt:
-  secret: smart-campus-secret-key-change-in-production  # 与原后端保持一致
+  secret: smart-campus-jwt-secret-key-2024-change-this-in-production  # 与原后端保持一致
   expiration: 86400000  # 24小时

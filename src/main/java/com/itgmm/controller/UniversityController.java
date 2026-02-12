@@ -58,7 +58,7 @@ public class UniversityController {
             return Result.error("登录已过期，请重新登录");
         }
 
-        // 3. 获取院校ID - 简化版本
+        // 3. 获取院校ID
         Integer universityId = null;
         Object idObj = request.get("universityId");
 
@@ -67,7 +67,6 @@ public class UniversityController {
             return Result.error("院校ID不能为空");
         }
 
-        // 🔴 关键修复：直接转换为Number，再取intValue
         if (idObj instanceof Number) {
             universityId = ((Number) idObj).intValue();
         } else {
@@ -78,13 +77,24 @@ public class UniversityController {
                 return Result.error("院校ID格式错误");
             }
         }
-
         System.out.println("✅ 院校ID: " + universityId);
 
-        // 4. 执行操作
+        // 4. 执行操作 - 添加try-catch和详细日志
         try {
+            System.out.println("🔍 开始调用service.toggleFavorite, userId: " + userId.intValue() + ", universityId: " + universityId);
+
+            // 检查当前状态
+            boolean currentStatus = universityService.isFavorited(userId.intValue(), universityId);
+            System.out.println("📊 当前收藏状态: " + currentStatus);
+
+            // 执行切换
             universityService.toggleFavorite(userId.intValue(), universityId);
             System.out.println("✅ 操作成功");
+
+            // 检查切换后的状态
+            boolean newStatus = universityService.isFavorited(userId.intValue(), universityId);
+            System.out.println("📊 切换后状态: " + newStatus);
+
             return Result.success();
         } catch (Exception e) {
             System.out.println("❌ 操作失败: " + e.getMessage());

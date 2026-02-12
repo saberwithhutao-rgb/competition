@@ -35,11 +35,15 @@ public class UniversityController {
      */
     @PostMapping("/toggle")
     public Result toggleFavorite(
-            @RequestBody Map<String, Integer> request,
+            @RequestBody Map<String, Object> request,  // 改为Object类型
             @RequestHeader("Authorization") String authHeader) {
+
+        System.out.println("=== 收到收藏请求 ===");
+        System.out.println("请求体: " + request);
 
         // 1. 验证token
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("❌ 未提供token");
             return Result.error("未登录");
         }
 
@@ -48,19 +52,50 @@ public class UniversityController {
         Long userId;
         try {
             userId = jwtUtil.getUserIdFromToken(token);
+            System.out.println("✅ 解析用户ID: " + userId);
         } catch (Exception e) {
+            System.out.println("❌ token解析失败: " + e.getMessage());
             return Result.error("登录已过期，请重新登录");
         }
 
-        // 3. 获取院校ID
-        Integer universityId = request.get("universityId");
+        // 3. 获取院校ID（兼容多种类型）
+        Integer universityId = null;
+        Object idObj = request.get("universityId");
+        if (idObj == null) {
+            System.out.println("❌ 院校ID为空");
+            return Result.error("院校ID不能为空");
+        }
+
+        // 处理Integer或Double类型
+        if (idObj instanceof Integer) {
+            universityId = (Integer) idObj;
+        } else if (idObj instanceof Double) {
+            universityId = ((Double) idObj).intValue();
+        } else if (idObj instanceof String) {
+            try {
+                universityId = Integer.parseInt((String) idObj);
+            } catch (NumberFormatException e) {
+                System.out.println("❌ 院校ID格式错误: " + idObj);
+                return Result.error("院校ID格式错误");
+            }
+        }
+
         if (universityId == null) {
             return Result.error("院校ID不能为空");
         }
 
+        System.out.println("✅ 院校ID: " + universityId);
+
         // 4. 执行操作
-        universityService.toggleFavorite(userId.intValue(), universityId);
-        return Result.success();
+        try {
+            universityService.toggleFavorite(userId.intValue(), universityId);
+            System.out.println("✅ 操作成功");
+            return Result.success();
+        } catch (Exception e) {
+            System.out.println("❌ 操作失败: " + e.getMessage());
+            e.printStackTrace();
+            return Result.error("操作失败：" + e.getMessage());
+        }
     }
 
     /**

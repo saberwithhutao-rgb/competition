@@ -109,39 +109,28 @@ public class UniversityController {
     @GetMapping("/check")
     public Result checkIfFavorited(
             @RequestParam Integer universityId,
-            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {  // 只保留Authorization
 
-        System.out.println("=================================");
-        System.out.println("【/check】接口被调用");
-        System.out.println("收到参数 - universityId: " + universityId);
-        System.out.println("收到参数 - authHeader: " + (authHeader != null ? "存在" : "不存在"));
+        System.out.println("=== /check 被调用 ===");
+        System.out.println("universityId: " + universityId);
 
-        if (authHeader == null) {
-            System.out.println("❌ authHeader为空");
+        // 未登录用户默认返回false
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("未登录，返回false");
             return Result.success(false);
         }
 
-        if (!authHeader.startsWith("Bearer ")) {
-            System.out.println("❌ authHeader格式错误: " + authHeader);
-            return Result.success(false);
-        }
-
+        // 从token获取用户ID
         String token = authHeader.substring(7);
-        System.out.println("提取token: " + token.substring(0, Math.min(20, token.length())) + "...");
-
         try {
             Long userId = jwtUtil.getUserIdFromToken(token);
-            System.out.println("✅ token解析成功 - userId: " + userId);
-
-            System.out.println("调用service.isFavorited - userId: " + userId + ", universityId: " + universityId);
+            System.out.println("解析用户ID: " + userId);
             boolean favorited = universityService.isFavorited(userId.intValue(), universityId);
-            System.out.println("✅ isFavorited返回: " + favorited);
-
+            System.out.println("收藏状态: " + favorited);
             return Result.success(favorited);
         } catch (Exception e) {
-            System.out.println("❌ 执行失败: " + e.getMessage());
-            e.printStackTrace();
-            return Result.error("操作失败: " + e.getMessage());
+            System.out.println("token解析失败: " + e.getMessage());
+            return Result.success(false);
         }
     }
 
